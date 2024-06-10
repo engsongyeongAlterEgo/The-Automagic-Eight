@@ -7,7 +7,11 @@ from datetime import datetime
 import subprocess
 import watchdog.events
 import watchdog.observers
+import tkinter as tk
+from threading import Thread
 
+stop_flag = False
+observer = None  # Declare observer as a global variable
 
 class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
     
@@ -47,6 +51,7 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
             # subprocess.run([pathway.exe_path])
 
 def monitor_folder():
+    global observer  # Access the global observer
     # Create a watchdog observer
     observer = watchdog.observers.Observer()
 
@@ -60,13 +65,36 @@ def monitor_folder():
     observer.start()
 
     try:
-        while True:
+        while not stop_flag:
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
 
     observer.join()
 
-
 # Start monitoring the folder
-monitor_folder()
+def start_process():
+    status_label.config(text="Monitoring process started.")
+    thread = Thread(target=monitor_folder)
+    thread.start()
+
+def stop_process():
+    status_label.config(text="Monitoring process stopped.")
+    global stop_flag
+    stop_flag = True
+    global observer  # Access the global observer
+    if observer is not None:
+        observer.stop()
+        observer.join()
+        observer = None  # Reset the observer
+
+root = tk.Tk()
+root.geometry("300x100")
+root.title("Automagic Eight.EXE")
+status_label = tk.Label(root, text="Monitoring process not started.")
+status_label.pack()
+start_button = tk.Button(root, text="Start", command=start_process)
+start_button.pack()
+stop_button = tk.Button(root, text="Stop", command=stop_process)
+stop_button.pack()
+root.mainloop()
