@@ -1,3 +1,4 @@
+import tkinter as tk
 import os
 import threading
 import time
@@ -8,14 +9,12 @@ import subprocess
 import watchdog.events
 import watchdog.observers
 
-
 class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
-    
     def __init__(self, program_to_close):
         self.last_modified = datetime.now()
         self.program_to_close = program_to_close
         self.timer_started = False
-        
+
     def start_timer(self):
         self.timer_started = True
         threading.Timer(5, self.launch_program).start()
@@ -23,7 +22,7 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
     def launch_program(self):
         subprocess.run([pathway.exe_path])
         self.timer_started = False
-        
+
     def on_modified(self, event):
         # if datetime.now() - self.last_modified < timedelta(seconds=1):
         #     subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])
@@ -48,6 +47,7 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
 
 def monitor_folder():
     # Create a watchdog observer
+    global observer
     observer = watchdog.observers.Observer()
 
     # Create a file modified event handler
@@ -59,14 +59,30 @@ def monitor_folder():
     # Start the observer
     observer.start()
 
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-
+def stop_monitoring():
+    global observer
+    status_label.config(text="Monitoring process stopped.")
+    observer.stop()
     observer.join()
 
+def start_monitoring():
+    global monitor_thread
+    status_label.config(text="Monitoring process started.")
+    monitor_thread = threading.Thread(target=monitor_folder)
+    monitor_thread.start()
 
-# Start monitoring the folder
-monitor_folder()
+root = tk.Tk()
+root.title("Automagic Eight.EXE")  # Set the title of the window
+root.geometry("300x100")  # Set the size of the window
+root.configure(bg='black')  # Set the background color of the window
+
+status_label = tk.Label(root, text="Monitoring process not started.", bg='black', fg='white')
+status_label.pack()
+
+start_button = tk.Button(root, text="Start", command=start_monitoring, bg='green', fg='white', activebackground='darkgreen')
+start_button.pack()
+
+stop_button = tk.Button(root, text="Stop", command=stop_monitoring, bg='red', fg='white', activebackground='darkred')
+stop_button.pack()
+
+root.mainloop()
