@@ -28,7 +28,8 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
         #     subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])
         # else:
         #     self.last_modified = datetime.now()
-        
+        if event.event_type != 'modified':
+            return
         if not self.timer_started :
             self.start_timer()
 
