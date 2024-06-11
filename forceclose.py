@@ -6,6 +6,7 @@ import shutil
 from pathway import src_path, dst_path, exe_path, close_path
 from datetime import datetime
 import subprocess
+import psutil
 import watchdog.events
 import watchdog.observers
 
@@ -14,9 +15,23 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
         self.last_modified = datetime.now()
         self.program_to_close = program_to_close
         self.timer_started = False
+        
+        
+    def kill_ExactGlobe(self):
+        # Get the list of running processes
+        running_processes = psutil.process_iter(['name'])
+
+        # Iterate over the running processes
+        for process in running_processes:
+            # Check if the process name contains "Exact"
+            if "Exact" in process.info['name']:
+                # Kill the process
+                print(f'Killing process: {process.info["name"]}')
+                process.kill()
 
     def start_timer(self):
         self.timer_started = True
+        self.kill_ExactGlobe()
         threading.Timer(5, self.launch_program).start()
 
     def launch_program(self):
