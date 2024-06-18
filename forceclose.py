@@ -72,6 +72,20 @@ def monitor_folder():
 
     # Start the observer
     observer.start()
+    
+def kill_ExactGlobe():
+    # Get the list of running processes
+    running_processes = psutil.process_iter(['name'])
+
+    # Iterate over the running processes
+    for process in running_processes:
+        # Check if the process name contains "Exact"
+        if "Exact" in process.info['name']:
+            # Kill the process
+            print(f'Killing process: {process.info["name"]}')
+            process.kill()
+    subprocess.call(['taskkill', '/F', '/IM', close_path])   
+            
 
 def stop_monitoring():
     global observer
@@ -107,6 +121,10 @@ stop_button = tk.Button(root, text="Stop", command=stop_monitoring, bg='red', fg
 stop_button.grid(row=row, column=0, columnspan=2, sticky="E")
 row += 1
 
+stop_button = tk.Button(root, text="Kill Exact", command=kill_ExactGlobe, bg='red', fg='white', activebackground='darkred')
+stop_button.grid(row=row, column=0, columnspan=2, sticky="E")
+row += 1
+
 separator_label = tk.Label(root, text="\n", bg='black')
 separator_label.grid(row=row, column=0,  columnspan=2)
 row += 1
@@ -128,7 +146,7 @@ row += 1
 def save_all():
     global src_path, dst_path
     custom_src_path = src_path_entry.get()
-    custom_dst_path = src_path_entry.get()
+    custom_dst_path = dst_path_entry.get()
     
     
     if dst_path != custom_dst_path or src_path != custom_src_path:
