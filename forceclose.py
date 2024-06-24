@@ -3,7 +3,7 @@ import os
 import threading
 import time
 import shutil
-from pathway import src_path, dst_path, exe_path, close_path
+from pathway import src_path, dst_path, exe_path, close_path, ignore_files
 from datetime import datetime
 import subprocess
 import psutil
@@ -18,6 +18,7 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
         
         
     def kill_ExactGlobe(self):
+        subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])   
         # Get the list of running processes
         running_processes = psutil.process_iter(['name'])
 
@@ -35,27 +36,31 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
         threading.Timer(5, self.launch_program).start()
 
     def launch_program(self):
-        subprocess.run([exe_path])
         self.timer_started = False
+        subprocess.run([exe_path])
 
     def on_modified(self, event):
         # if datetime.now() - self.last_modified < timedelta(seconds=1):
         #     subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])
         # else:
         #     self.last_modified = datetime.now()
+        file_name = os.path.basename(event.src_path)
+        if file_name in ignore_files:
+            print("IGNORED FILE :" + file_name)
+            return
         if event.event_type != 'modified':
             return
         if not self.timer_started :
             self.start_timer()
 
-        subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])   
+        # subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])   
         print(f'Event type: {event.event_type}  path : {event.src_path}')
         print(event.is_directory) # This attribute is also available
         if not event.is_directory:
             # Force close the program
             print(f'event type: {event.event_type}  path : {event.src_path}')
             # Get the file name from the event source path
-            file_name = os.path.basename(event.src_path)
+            # file_name = os.path.basename(event.src_path)
             print(f'File name: {file_name}')
             shutil.copyfile(event.src_path, dst_path + '\\' + file_name)
 
