@@ -64,112 +64,118 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
             print(f'File name: {file_name}')
             shutil.copyfile(event.src_path, dst_path + '\\' + file_name)
 
-def monitor_folder():
-    # Create a watchdog observer
-    global observer
-    observer = watchdog.observers.Observer()
+# def monitor_folder():
+#     # Create a watchdog observer
+#     global observer
+#     observer = watchdog.observers.Observer()
 
-    # Create a file modified event handler
-    event_handler = FileModifiedHandler(close_path)
+#     # Create a file modified event handler
+#     event_handler = FileModifiedHandler(close_path)
 
-    # Schedule the event handler to monitor the folder
-    observer.schedule(event_handler, src_path, recursive=True)
+#     # Schedule the event handler to monitor the folder
+#     observer.schedule(event_handler, src_path, recursive=True)
 
-    # Start the observer
-    observer.start()
+#     # Start the observer
+#     observer.start()
     
-def kill_ExactGlobe():
-    # Get the list of running processes
-    running_processes = psutil.process_iter(['name'])
+# def kill_ExactGlobe():
+#     # Get the list of running processes
+#     running_processes = psutil.process_iter(['name'])
 
-    # Iterate over the running processes
-    for process in running_processes:
-        # Check if the process name contains "Exact"
-        if "Exact" in process.info['name']:
-            # Kill the process
-            print(f'Killing process: {process.info["name"]}')
-            process.kill()
-    subprocess.call(['taskkill', '/F', '/IM', close_path])   
+#     # Iterate over the running processes
+#     for process in running_processes:
+#         # Check if the process name contains "Exact"
+#         if "Exact" in process.info['name']:
+#             # Kill the process
+#             print(f'Killing process: {process.info["name"]}')
+#             process.kill()
+#     subprocess.call(['taskkill', '/F', '/IM', close_path])   
             
 
-def stop_monitoring():
-    global observer
-    status_label.config(text="Monitoring process stopped.")
-    observer.stop()
-    observer.join()
+# def stop_monitoring():
+#     global observer
+#     status_label.config(text="Monitoring process stopped.")
+#     observer.stop()
+#     observer.join()
 
-def start_monitoring():
-    global monitor_thread
-    status_label.config(text="Monitoring process started.")
-    monitor_thread = threading.Thread(target=monitor_folder)
-    monitor_thread.start()
+# def start_monitoring():
+#     global monitor_thread
+#     status_label.config(text="Monitoring process started.")
+#     monitor_thread = threading.Thread(target=monitor_folder)
+#     monitor_thread.start()
 
-winHeight = 300
-winWidth = 400
+# winHeight = 300
+# winWidth = 400
 
-root = tk.Tk()
-root.title("Automagic Eight.EXE")  # Set the title of the window
-root.geometry(f"{winWidth}x{winHeight}")  # Set the size of the window
-root.configure(bg='black')  # Set the background color of the window
+# root = tk.Tk()
 
-row = 0
 
-status_label = tk.Label(root, text="Monitoring process not started.", bg='black', fg='white')
-status_label.grid(row=row, column=0, columnspan=3, sticky="WE")
-row += 1
+# winHeight = 300
+# winWidth = 400
 
-start_button = tk.Button(root, text="Start", command=start_monitoring, bg='green', fg='white', activebackground='darkgreen')
-start_button.grid(row=row, column=0, columnspan=2, sticky="E")
-row += 1
+# root = tk.Tk()
+# root.title("Automagic Eight.EXE")  # Set the title of the window
+# root.geometry(f"{winWidth}x{winHeight}")  # Set the size of the window
+# root.configure(bg='black')  # Set the background color of the window
 
-stop_button = tk.Button(root, text="Stop", command=stop_monitoring, bg='red', fg='white', activebackground='darkred')
-stop_button.grid(row=row, column=0, columnspan=2, sticky="E")
-row += 1
+# row = 0
 
-stop_button = tk.Button(root, text="Kill Exact", command=kill_ExactGlobe, bg='red', fg='white', activebackground='darkred')
-stop_button.grid(row=row, column=0, columnspan=2, sticky="E")
-row += 1
+# status_label = tk.Label(root, text="Monitoring process not started.", bg='black', fg='white')
+# status_label.grid(row=row, column=0, columnspan=3, sticky="WE")
+# row += 1
 
-separator_label = tk.Label(root, text="\n", bg='black')
-separator_label.grid(row=row, column=0,  columnspan=2)
-row += 1
+# start_button = tk.Button(root, text="Start", command=start_monitoring, bg='green', fg='white', activebackground='darkgreen')
+# start_button.grid(row=row, column=0, columnspan=2, sticky="E")
+# row += 1
 
-src_path_label = tk.Label(root, text="Source Path:", bg='black', fg='white', width= winWidth // 25)
-src_path_label.grid(row=row, column=0, sticky="WE")
-src_path_entry = tk.Entry(root, width= winWidth // 18)
-src_path_entry.grid(row=row, column=1, columnspan=2,  sticky="WE")
-src_path_entry.insert(0, src_path)
-row += 1
+# stop_button = tk.Button(root, text="Stop", command=stop_monitoring, bg='red', fg='white', activebackground='darkred')
+# stop_button.grid(row=row, column=0, columnspan=2, sticky="E")
+# row += 1
 
-dst_path_label = tk.Label(root, text="Destination Path:", bg='black', fg='white', width= winWidth // 25)
-dst_path_label.grid(row=row, column=0, sticky="WE")
-dst_path_entry = tk.Entry(root, width= winWidth // 18)
-dst_path_entry.grid(row=row, column=1, columnspan=2, sticky="WE")
-dst_path_entry.insert(0, dst_path)
-row += 1
+# stop_button = tk.Button(root, text="Kill Exact", command=kill_ExactGlobe, bg='red', fg='white', activebackground='darkred')
+# stop_button.grid(row=row, column=0, columnspan=2, sticky="E")
+# row += 1
 
-def save_all():
-    global src_path, dst_path
-    custom_src_path = src_path_entry.get()
-    custom_dst_path = dst_path_entry.get()
+# separator_label = tk.Label(root, text="\n", bg='black')
+# separator_label.grid(row=row, column=0,  columnspan=2)
+# row += 1
+
+# src_path_label = tk.Label(root, text="Source Path:", bg='black', fg='white', width= winWidth // 25)
+# src_path_label.grid(row=row, column=0, sticky="WE")
+# src_path_entry = tk.Entry(root, width= winWidth // 18)
+# src_path_entry.grid(row=row, column=1, columnspan=2,  sticky="WE")
+# src_path_entry.insert(0, src_path)
+# row += 1
+
+# dst_path_label = tk.Label(root, text="Destination Path:", bg='black', fg='white', width= winWidth // 25)
+# dst_path_label.grid(row=row, column=0, sticky="WE")
+# dst_path_entry = tk.Entry(root, width= winWidth // 18)
+# dst_path_entry.grid(row=row, column=1, columnspan=2, sticky="WE")
+# dst_path_entry.insert(0, dst_path)
+# row += 1
+
+# def save_all():
+#     global src_path, dst_path
+#     custom_src_path = src_path_entry.get()
+#     custom_dst_path = dst_path_entry.get()
     
     
-    if dst_path != custom_dst_path or src_path != custom_src_path:
-        dst_path = custom_dst_path
-        src_path = custom_src_path
-        f = open("pathway.py", "w")
-        f.write(f"src_path = {src_path}\ndst_path = {dst_path}\nexe_path = {dst_path}\\E6Shell.exe\nclose_path = {close_path}")
-        f.close()
+#     if dst_path != custom_dst_path or src_path != custom_src_path:
+#         dst_path = custom_dst_path
+#         src_path = custom_src_path
+#         f = open("pathway.py", "w")
+#         f.write(f"src_path = {src_path}\ndst_path = {dst_path}\nexe_path = {dst_path}\\E6Shell.exe\nclose_path = {close_path}")
+#         f.close()
         
-        print("Pathway.py has been updated.")
+#         print("Pathway.py has been updated.")
             
-        f = open("pathway.py", "r")
-        print(f.read())
-        f.close()
+#         f = open("pathway.py", "r")
+#         print(f.read())
+#         f.close()
         
-set_button = tk.Button(root, text="Apply", command=save_all, bg='blue', fg='white', activebackground='darkblue')
-set_button.grid(row=row + 2, column=1, columnspan=2)
-row += 1
+# set_button = tk.Button(root, text="Apply", command=save_all, bg='blue', fg='white', activebackground='darkblue')
+# set_button.grid(row=row + 2, column=1, columnspan=2)
+# row += 1
 
 
-root.mainloop()
+# root.mainloop()
