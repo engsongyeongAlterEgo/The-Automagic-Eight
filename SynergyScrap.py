@@ -16,17 +16,13 @@ def get_website_html(url):
 
 # Example usage
 driver = webdriver.Chrome()
-url = "https://employees.exact.com/docs/WflRequest.aspx?BCAction=1&ID=%7bf8c9239b-61bc-4094-824d-ed9cb28873d3%7d"
+url = "https://employees.exact.com/docs/WflRequest.aspx?BCAction=1&ID=%7b03922a77-7f03-4a09-9d49-c826e5807b80%7d"
 #html = get_website_html(website_url)
 driver.get(url)
 
 # Create a BeautifulSoup object with JavaScript support using 'lxml' parser
 # soup = BeautifulSoup(html, 'lxml')
 soup = BeautifulSoup(driver.page_source, 'html.parser')
-#print(soup.text)
-#Find all div elements
-div_elements = soup.find_all('div')
-
-# Print the div elements
-for div in div_elements:
-    print(div)
+# Find all div elements
+heading = soup.find(id ='_Header')
+title = soup.find(id ='Description')
