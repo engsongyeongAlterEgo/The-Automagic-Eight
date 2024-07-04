@@ -11,7 +11,8 @@ import time
 from selenium.webdriver.common.keys import Keys
 
 
-
+userId = ""
+userPwd = ""
 
 # Initialize the WebDriver for Chrome
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -24,7 +25,7 @@ driver.get("https://start.exactonline.nl/?ReturnUrl=%2fdocs%2fMenuPortal.aspx")
 
 # Find the LoginForm$UserName element by its ID and fill it in
 username_field = driver.find_element(By.ID, "LoginForm$UserName")
-username_field.send_keys("")# put ID
+username_field.send_keys(userId)# put ID
 
 # Find the button by its ID and click it
 submit_button = driver.find_element(By.ID, "submit_btn")
@@ -36,7 +37,7 @@ password_field = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.ID, "LoginForm_Password"))
 )
 
-password_field.send_keys("")# put password
+password_field.send_keys(userPwd)# put password
 
 # Find the button by its ID and click it
 submit_button = driver.find_element(By.ID, "LoginForm_btnSave")
