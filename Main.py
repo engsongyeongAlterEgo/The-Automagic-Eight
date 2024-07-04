@@ -1,5 +1,13 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+from azure.devops.connection import Connection
+from msrest.authentication import BasicAuthentication
+from azure.devops.v7_1.work_item_tracking import JsonPatchOperation
+from azure.devops.v7_1.work_item_tracking.models import Wiql
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import re
+import webbrowser
 from forceclose import FileModifiedHandler
 from pathway import src_path, dst_path, close_path
 import psutil
@@ -9,6 +17,15 @@ import time
 import shutil
 from datetime import datetime
 import subprocess
+from FinalSolution import open_work_item_in_browser, getBugID
+from FinalSolution import organization_url, personal_access_token, wit_client, connection
+
+# pip install tk
+# pip install azure-devops
+# pip install beautifulsoup4
+# pip install selenium
+
+
 
 import watchdog.events
 import watchdog.observers
@@ -161,8 +178,183 @@ row += 1
 
 # ==========================  TAB 2 ==========================
 
+# Azure DevOps organization URL and personal access token (PAT)
+project_name = 'Exact-Globe-Plus'
+work_item_type = 'Task'
+# Create a connection to Azure DevOps
+credentials = BasicAuthentication('', personal_access_token)
+
+title = " "
+
+def on_submit():
+    url = entry_url.get()
+
+    # Initialize Selenium WebDriver (Chrome)
+    driver = webdriver.Chrome()
+    driver.get(url)
+
+    # Wait for the page to load (adjust the sleep time as needed)
+    driver.implicitly_wait(10)  # Wait up to 10 seconds for elements to appear
+
+    # Create a BeautifulSoup object with JavaScript rendered content
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+  
+    # Find the element using the specific CSS selector
+    try:
+        element = soup.select_one('#_Header > table > tbody > tr > td:nth-child(1) > span')
+        name = soup.select_one('#nano-content > table.WorkflowBlock > tbody > tr:nth-child(2) > td:nth-child(3) > a')
+        desc = soup.find(id ='Description')
+        if name:
+            if element and desc:
+                # Extract the numbers using regex
+                match = re.search(r'\b\d+\.\d+\.\d+\b', element.text)
+                title = desc.text.strip()
+                userName = name.text.strip()
+                if match :
+                    br_id.set(match.group())
+                    bug_work_item_id = getBugID(match.group(), organization_url, personal_access_token)
+                    if bug_work_item_id and title and userName:
+                        bug_id.set(bug_work_item_id)
+                        
+                        # Define fields for the new work items
+                        new_work_item_coding = [
+                            JsonPatchOperation(
+                                op="add",
+                                path="/fields/System.Title",
+                                value= "[CODING]" + title
+                            ),
+                            JsonPatchOperation(
+                                op="add",
+                                path="/fields/System.AssignedTo",
+                                value= userName
+                            ),
+                                JsonPatchOperation(
+                                op="add",
+                                path="/relations/-",
+                                value={
+                                    "rel": "System.LinkTypes.Hierarchy-Reverse",
+                                    "url": f"{organization_url}/_apis/wit/workItems/{bug_work_item_id}"
+                                }
+                            ),
+                            # Add more fields as needed
+                        ]
+                        
+                        new_work_item_testing = [
+                            JsonPatchOperation(
+                                op="add",
+                                path="/fields/System.Title",
+                                value= "[TESTING]" + title
+                            ),
+                            JsonPatchOperation(
+                                op="add",
+                                path="/fields/System.AssignedTo",
+                                value= " "
+                            ),
+                            JsonPatchOperation(
+                                op="add",
+                                path="/fields/Microsoft.VSTS.Common.Activity",
+                                value="Testing"
+                            ),
+                                JsonPatchOperation(
+                                op="add",
+                                path="/relations/-",
+                                value={
+                                    "rel": "System.LinkTypes.Hierarchy-Reverse",
+                                    "url": f"{organization_url}/_apis/wit/workItems/{bug_work_item_id}"
+                                }
+                            ),
+                        ]
+                        
+                        # Uncomment when you want to create task:
+
+                        # Create the work items
+                        try:
+                            created_work_item_coding = wit_client.create_work_item(
+                                document=new_work_item_coding,
+                                project=project_name,
+                                type=work_item_type
+                            )
+                            print(f"Created Coding work item with ID: {created_work_item_coding.id}")
+                        
+                            created_work_item_testing = wit_client.create_work_item(
+                                document=new_work_item_testing,
+                                project=project_name,
+                                type=work_item_type
+                            )
+                            print(f"Created Testing work item with ID: {created_work_item_testing.id}")
+                        
+                        except Exception as e:
+                            print(f"Failed to create work items: {str(e)}")
+                        
+                        def update_work_item(wit_client, work_item_id, project_name):
+                            update_patch_document = [
+                                JsonPatchOperation(
+                                    op="replace",  # Use "replace" to update an existing field
+                                    path="/fields/System.State",
+                                    value="Done"
+                                ),
+                            ]
+                        
+                            try:
+                                updated_work_item = wit_client.update_work_item(
+                                    document=update_patch_document,
+                                    id=work_item_id,
+                                    project=project_name
+                                )
+                                print(f"Updated work item with ID: {updated_work_item.id}")
+                            except Exception as e:
+                                print(f"Failed to update work item: {str(e)}")
+                        
+                        # Example usage
+                        update_work_item(wit_client, created_work_item_coding.id, project_name)
+                    else:
+                        bug_id.set("Bug ID not found or request not approved.")
+                        messagebox.showwarning("Error", "Bug ID not found or request not approved.")
+                else:
+                    br_id.set("BR ID not found in the element.")
+            else:
+                br_id.set("Element not found.")
+        else:
+            br_id.set("Name not found.Please make sure BR approved.")
+    except Exception as e:
+        br_id.set(f"An error occurred: {e}")
+
+    # Close the WebDriver
+    driver.quit()
+
+
 tab2.rowconfigure(0, weight=1)
 tab2.columnconfigure(0, weight=1)
+
+# Create labels and entry fields with red color
+label_url = tk.Label(tab2, text="Enter URL:", fg="black")
+label_url.grid(row=0, column=0)
+entry_url = tk.Entry(tab2, width=30)
+entry_url.grid(row=0, column=1)
+
+# Button to submit URL
+btn_submit = tk.Button(tab2, text="Submit", command=on_submit, bg="black", fg="white")
+btn_submit.grid(row=1, column=0, columnspan=2, pady=10)
+
+# Label and text variable for BR ID
+label_br_id = tk.Label(tab2, text="BR ID:", fg="black")
+label_br_id.grid(row=2, column=0, pady=5)
+br_id = tk.StringVar()
+br_id.set("")
+label_br_id_value = tk.Label(tab2, textvariable=br_id, fg="black")
+label_br_id_value.grid(row=2, column=1)
+
+# Label and text variable for Bug ID
+label_bug_id = tk.Label(tab2, text="Bug ID:", fg="black")
+label_bug_id.grid(row=3, column=0, pady=5)
+bug_id = tk.StringVar()
+bug_id.set("")
+label_bug_id_value = tk.Label(tab2, textvariable=bug_id, fg="black")
+label_bug_id_value.grid(row=3, column=1)
+
+# Button to open work item in browser
+btn_open = tk.Button(tab2, text="Open Work Item", command=lambda: open_work_item_in_browser(bug_id.get(), organization_url, project_name), bg="black", fg="white")
+btn_open.grid(row=4, column=0, columnspan=2, pady=10)
 
 # ==========================  TAB 3 ==========================
 
