@@ -20,6 +20,8 @@ import subprocess
 from FinalSolution import open_work_item_in_browser, getBugID
 from FinalSolution import organization_url, personal_access_token, wit_client, connection
 
+from hourEntry import automate_hour_entry
+
 # pip install tk
 # pip install azure-devops
 # pip install beautifulsoup4
@@ -30,7 +32,6 @@ from FinalSolution import organization_url, personal_access_token, wit_client, c
 import watchdog.events
 import watchdog.observers
 
-row = 0
 winWidth = 400
 winHeight = 300
 
@@ -48,7 +49,7 @@ tab3 = ttk.Frame(tabControl)
 
 tabControl.add(tab1, text='Target Sync')
 tabControl.add(tab2, text='Task Create')
-tabControl.add(tab3, text='Test Logger')
+tabControl.add(tab3, text='Hour Entry')
 tabControl.pack(expand=1, fill="both")
 
 ttk.Label(tab1,
@@ -65,7 +66,7 @@ ttk.Label(tab2,
                                    pady=30)
 
 ttk.Label(tab3,
-          text="Test Logger",
+          text="Hour Entry",
           foreground='black').grid(column=0,
                                    row=0,
                                    padx=30,
@@ -134,6 +135,7 @@ def save_all():
         print(f.read())
         f.close()
 
+row = 0
 tab1.rowconfigure(0, weight=1)
 tab1.columnconfigure(0, weight=1)
 
@@ -323,8 +325,8 @@ def on_submit():
     driver.quit()
 
 
-tab2.rowconfigure(0, weight=1)
-tab2.columnconfigure(0, weight=1)
+tab2.rowconfigure(0, weight=0)
+tab2.columnconfigure(0, weight=0)
 
 # Create labels and entry fields with red color
 label_url = tk.Label(tab2, text="Enter URL:", fg="black")
@@ -358,7 +360,57 @@ btn_open.grid(row=4, column=0, columnspan=2, pady=10)
 
 # ==========================  TAB 3 ==========================
 
+tab3.rowconfigure(0, weight=0)
+tab3.columnconfigure(0, weight=0)
 
+# Create labels and entry fields for User ID and Password
+# label_user_id = tk.Label(tab3, text="User ID:", fg="black")
+# label_user_id.grid(row=0, column=0, sticky="WE")
+# entry_user_id = tk.Entry(tab3, show="")
+# entry_user_id.grid(row=0, column=1)
 
+# label_password = tk.Label(tab3, text="Password:", fg="black")
+# label_password.grid(row=1, column=0, sticky="WE")
+# entry_password = tk.Entry(tab3, show="*")
+# entry_password.grid(row=1, column=1)
+
+row = 0
+label_user_id = tk.Label(tab3, text="User ID :", fg='black', width=winWidth // 25)
+label_user_id.grid(row=row, column=0,  sticky="WE")
+entry_user_id = tk.Entry(tab3)
+entry_user_id.grid(row=row, column=1, columnspan=2, sticky="WE")
+row += 1
+
+label_password = tk.Label(tab3, text="Password :", fg='black', width=winWidth // 25)
+label_password.grid(row=row, column=0, sticky="WE")
+entry_password = tk.Entry(tab3)
+entry_password.grid(row=row, column=1, columnspan=2, sticky="WE")
+row += 1
+
+label_pro_code = tk.Label(tab3, text="Project Code :", fg='black', width=winWidth // 25)
+label_pro_code.grid(row=row, column=0,  sticky="WE")
+entry_pro_code = tk.Entry(tab3)
+entry_pro_code.grid(row=row, column=1, columnspan=2, sticky="WE")
+row += 1
+
+label_activity = tk.Label(tab3, text="Activity :", fg='black', width=winWidth // 25)
+label_activity.grid(row=row, column=0,  sticky="WE")
+entry_activity = tk.Entry(tab3)
+entry_activity.grid(row=row, column=1, columnspan=2, sticky="WE")
+row += 1
+
+separator_label = tk.Label(tab3, text="\n")
+separator_label.grid(row=row, column=0,  columnspan=3)
+row += 1
+
+def trigger_hour_entry():
+    user_id = entry_user_id.get()
+    password = entry_password.get()
+    pro_code = entry_pro_code.get()
+    activity = entry_activity.get()
+    automate_hour_entry(user_id, password, pro_code, activity)
+
+btn_trigger_hour_entry = tk.Button(tab3, text="Start", command=trigger_hour_entry, bg="green", fg="black")
+btn_trigger_hour_entry.grid(row=row, column=0, columnspan=3, padx=10, sticky="WE")
 
 root.mainloop()
