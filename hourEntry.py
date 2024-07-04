@@ -54,39 +54,25 @@ weekly_link = WebDriverWait(driver, 10).until(
 )
 weekly_link.click()
 
-# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
-project_field_id = "mtx_r0_Account_alt"
-value_to_input = "54"  # The value you want to set
 
 driver.switch_to.frame("MainWindow")
 
 
-driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+actions.send_keys('5').send_keys('4').perform()
 
+actions.send_keys(Keys.TAB).perform()
 
+for char in "AZGEN-699839":
+    actions.send_keys(char)
 
-# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
-project_field_id = "mtx_r0_Project_alt"
-value_to_input = "AZGEN-699839"  # The value you want to set
-
-
-
-driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
-# Send the TAB key
-time.sleep(5)
 actions.send_keys(Keys.TAB).perform()
 
 
-# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
-project_field_id = "mtx_r0_Item_alt"
-value_to_input = "training"  # The value you want to set
+for char in "Training":
+    actions.send_keys(char)
 
-
-
-driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
-# Send the TAB key
-time.sleep(5)
 actions.send_keys(Keys.TAB).perform()
+
 
 
 # Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
