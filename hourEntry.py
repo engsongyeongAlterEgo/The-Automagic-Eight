@@ -7,9 +7,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+import time
+from selenium.webdriver.common.keys import Keys
+
+
+
 
 # Initialize the WebDriver for Chrome
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+# Initialize ActionChains
+actions = ActionChains(driver)
 
 # Open the website
 driver.get("https://start.exactonline.nl/?ReturnUrl=%2fdocs%2fMenuPortal.aspx")
@@ -46,8 +54,86 @@ weekly_link = WebDriverWait(driver, 10).until(
 )
 weekly_link.click()
 
-project_field = driver.find_element(By.ID, "mtx_r0_Account_alt")
-project_field.send_keys("54")  # Replace "54" with the actual value you want to input
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_Account_alt"
+value_to_input = "54"  # The value you want to set
+
+driver.switch_to.frame("MainWindow")
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+
+
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_Project_alt"
+value_to_input = "AZGEN-699839"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+# Send the TAB key
+time.sleep(5)
+actions.send_keys(Keys.TAB).perform()
+
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_Item_alt"
+value_to_input = "training"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+# Send the TAB key
+time.sleep(5)
+actions.send_keys(Keys.TAB).perform()
+
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_c1_Quantity"
+value_to_input = "8"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_c2_Quantity"
+value_to_input = "8"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_c3_Quantity"
+value_to_input = "8"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_c4_Quantity"
+value_to_input = "8"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+
+
+# Assuming driver is your WebDriver instance and project_field_name is the name of your hidden field
+project_field_id = "mtx_r0_c5_Quantity"
+value_to_input = "8"  # The value you want to set
+
+
+
+driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
+
+
+driver.execute_script('document.getElementById("btnSaveAsSubmitted").click();')
 
 
 input("Press Enter to close the browser...")
