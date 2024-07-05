@@ -97,7 +97,7 @@ def automate_hour_entry(userId, userPwd, proCode, activity):
 
     driver.execute_script(f'document.getElementById("{project_field_id}").value="{value_to_input}";')
 
-    driver.execute_script('document.getElementById("btnSaveAsSubmitted").click();')
+    # driver.execute_script('document.getElementById("btnSaveAsSubmitted").click();')
     
     
     input("Press Enter to close the browser...")
