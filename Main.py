@@ -383,7 +383,7 @@ row += 1
 
 label_password = tk.Label(tab3, text="Password :", fg='black', width=winWidth // 25)
 label_password.grid(row=row, column=0, sticky="WE")
-entry_password = tk.Entry(tab3)
+entry_password = tk.Entry(tab3, show="*")
 entry_password.grid(row=row, column=1, columnspan=2, sticky="WE")
 row += 1
 
