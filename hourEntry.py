@@ -29,16 +29,23 @@ def automate_hour_entry(userId, userPwd, proCode, activity):
     submit_button.click()
 
     # Wait for the password field to be present on the new page
-    password_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "LoginForm_Password"))
-    )
+    # password_field = WebDriverWait(driver, 10).until(
+    #     EC.presence_of_element_located((By.ID, "LoginForm_Password"))
+    # )
 
-    password_field.send_keys(userPwd)# put password
+    password_field = WebDriverWait(driver, 20).until(
+        EC.presence_of_element_located((By.ID, "password"))
+    )
+    
+    # password_field.send_keys(userPwd)# put password
+    # Enter password securely using execute_script
+    driver.execute_script(f'arguments[0].value = "{userPwd}";', password_field)
 
     # Find the button by its ID and click it
-    submit_button = driver.find_element(By.ID, "LoginForm_btnSave")
+    submit_button = driver.find_element(By.ID, "next")
+    
     submit_button.click()
-
+    
     # Wait for the "Entries" menu item to be clickable and then click it
     entries_menu_item = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "Entries"))
