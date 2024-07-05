@@ -29,38 +29,38 @@ def automate_hour_entry(userId, userPwd, proCode, activity):
     submit_button.click()
 
     # Wait for the password field to be present on the new page
-    # password_field = WebDriverWait(driver, 10).until(
-    #     EC.presence_of_element_located((By.ID, "LoginForm_Password"))
-    # )
-
     password_field = WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.ID, "password"))
     )
     
-    # password_field.send_keys(userPwd)# put password
     # Enter password securely using execute_script
     driver.execute_script(f'arguments[0].value = "{userPwd}";', password_field)
 
     # Find the button by its ID and click it
     submit_button = driver.find_element(By.ID, "next")
-    
-    submit_button.click()
+    driver.execute_script("arguments[0].click();", submit_button)
     
     # Wait for the "Entries" menu item to be clickable and then click it
     entries_menu_item = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "Entries"))
     )
-    ActionChains(driver).move_to_element(entries_menu_item).click().perform()
+    driver.execute_script("arguments[0].click();", entries_menu_item)
 
     # Wait for the "Weekly" link to be clickable and then click it
     weekly_link = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "Entries_Entries_Entries_Weekly"))
     )
-    weekly_link.click()
+    driver.execute_script("arguments[0].click();", weekly_link)
 
     driver.switch_to.frame("MainWindow")
 
-    actions.send_keys('5').send_keys('4').perform()
+    driver.execute_script("arguments[0].value = '54';", driver.find_element(By.ID, "mtx_r0_c1_Quantity"))
+    driver.execute_script("arguments[0].value = '54';", driver.find_element(By.ID, "mtx_r0_c2_Quantity"))
+    driver.execute_script("arguments[0].value = '54';", driver.find_element(By.ID, "mtx_r0_c3_Quantity"))
+    driver.execute_script("arguments[0].value = '54';", driver.find_element(By.ID, "mtx_r0_c4_Quantity"))
+    driver.execute_script("arguments[0].value = '54';", driver.find_element(By.ID, "mtx_r0_c5_Quantity"))
+
+    actions = ActionChains(driver)
 
     actions.send_keys(Keys.TAB).perform()
 
