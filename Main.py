@@ -192,7 +192,6 @@ userName = ""
 bug_work_item_id = ""
 
 def create_work_item():
-    print(userName)
     print("Organization URL: ", organization_url)
     bug_id.set(bug_work_item_id)                    
     # Define fields for the new work items
@@ -205,7 +204,7 @@ def create_work_item():
         JsonPatchOperation(
             op="add",
             path="/fields/System.AssignedTo",
-            value= userName
+            value= user_name.get()
         ),
         JsonPatchOperation(
             op="add",
@@ -250,22 +249,22 @@ def create_work_item():
 
     # Create the work items
     try:
-        # created_work_item_coding = wit_client.create_work_item(
-        #     document=new_work_item_coding,
-        #     project=project_name,
-        #     type=work_item_type
-        # )
-        # print(f"Created Coding work item with ID: {created_work_item_coding.id}")
-
-        # created_work_item_testing = wit_client.create_work_item(
-        #     document=new_work_item_testing,
-        #     project=project_name,
-        #     type=work_item_type
-        # )
-        # print(f"Created Testing work item with ID: {created_work_item_testing.id}")
-                        
-        # except Exception as e:
-        #     print(f"Failed to create work items: {str(e)}")
+        created_work_item_coding = wit_client.create_work_item(
+            document=new_work_item_coding,
+            project=project_name,
+            type=work_item_type
+        )
+        print(f"Created Coding work item with ID: {created_work_item_coding.id}")
+        
+        created_work_item_testing = wit_client.create_work_item(
+            document=new_work_item_testing,
+            project=project_name,
+            type=work_item_type
+        )
+        print(f"Created Testing work item with ID: {created_work_item_testing.id}")
+                                
+    except Exception as e:
+        print(f"Failed to create work items: {str(e)}")
                         
         #def update_work_item(wit_client, work_item_id, project_name):
         update_patch_document = [
@@ -276,15 +275,15 @@ def create_work_item():
             ),
         ]
                         
-        # try:
-        #     updated_work_item = wit_client.update_work_item(
-        #         document=update_patch_document,
-        #         id=created_work_item_coding.id,
-        #         project=project_name
-        #     )
-        #     print(f"Updated work item with ID: {updated_work_item.id}")
-        # except Exception as e:
-        #     print(f"Failed to update work item 1: {str(e)}")
+        try:
+            updated_work_item = wit_client.update_work_item(
+                document=update_patch_document,
+                id=created_work_item_coding.id,
+                project=project_name
+            )
+            print(f"Updated work item with ID: {updated_work_item.id}")
+        except Exception as e:
+            print(f"Failed to update work item 1: {str(e)}")
     except Exception as e:
         print(f"Failed to update work item 2: {str(e)}")
         
@@ -317,6 +316,7 @@ def on_submit():
                 match = re.search(r'\b\d+\.\d+\.\d+\b', element.text)
                 title = desc.text.strip()
                 userName = name.text.strip()
+                user_name.set(userName)
                 print("Name:" + userName)
                 if match :
                     # br_id.set(match.group())
@@ -471,6 +471,15 @@ bug_item_id = tk.StringVar()
 bug_item_id.set("")
 label_bug_item_id_value = tk.Label(tab2, textvariable=bug_item_id, fg="black")
 label_bug_item_id_value.grid(row=row, column=1)
+row += 1
+
+# Label and text variable for BR ID
+label_user_name = tk.Label(tab2, text="USER NAME:", fg="black")
+label_user_name.grid(row=row, column=0, pady=5)
+user_name = tk.StringVar()
+user_name.set("")
+label_user_name_value = tk.Label(tab2, textvariable=user_name, fg="black")
+label_user_name_value.grid(row=row, column=1)
 row += 1
 
 code_title = tk.Label(tab2, text="Code Title:", fg="black")
