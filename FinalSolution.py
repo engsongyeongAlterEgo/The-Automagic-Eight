@@ -12,10 +12,11 @@ from selenium import webdriver
 # pip install selenium
 import webbrowser
 
+personal_access_token = '' #Place your token here
 
 # # Azure DevOps organization URL and personal access token (PAT)
 organization_url = 'https://dev.azure.com/ExactGroup'
-personal_access_token = ''
+
 # project_name = 'Exact-Globe-Plus'
 # work_item_type = 'Task'
 # # Create a connection to Azure DevOps
