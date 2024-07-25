@@ -8,11 +8,5 @@ If it's not found try:
 4.  Add on "C:\Users\Username\AppData\Local\Programs\Python\Python Version"
 5.  Add on "C:\Users\Username\AppData\Local\Programs\Python\Python Version\Scripts"
 
-## Watchdog
-pip install watchdog
-
-## Task Manager
-pip install psutil
-
 ## Overall
-pip install watchdog psutil
+pip install watchdog psutil tk azure-devops beautifulsoup4 selenium

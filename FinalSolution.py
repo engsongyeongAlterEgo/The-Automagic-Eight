@@ -10,7 +10,6 @@ from azure.devops.v7_1.work_item_tracking.models import Wiql
 from bs4 import BeautifulSoup
 from selenium import webdriver
 # pip install selenium
-import re
 import webbrowser
 
 
