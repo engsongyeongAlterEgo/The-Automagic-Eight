@@ -10,9 +10,9 @@ If it's not found try:
 
 ## Personal access tokens (DevOps)
 1. Create tokens following [Personal access tokens Guide](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows)
-2. Save the created token anywhere safe, it will be needed after every pulling from Repository
-3. Enter the token in "FinalSolution.py" personal_access_token variable
-For example:  personal_access_token = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+2. Save the created token anywhere safe
+3. Enter the token in "accToken.py" token variable
+For example:  token = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 ## Overall Package Needed
 pip install watchdog psutil tk azure-devops beautifulsoup4 selenium

@@ -12,7 +12,9 @@ from selenium import webdriver
 # pip install selenium
 import webbrowser
 
-personal_access_token = '' #Place your token here
+from accToken import token as personal_access_token
+
+# personal_access_token = '' #Place your token here
 
 # # Azure DevOps organization URL and personal access token (PAT)
 organization_url = 'https://dev.azure.com/ExactGroup'

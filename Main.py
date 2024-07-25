@@ -262,11 +262,8 @@ def create_work_item():
             type=work_item_type
         )
         print(f"Created Testing work item with ID: {created_work_item_testing.id}")
-                                
-    except Exception as e:
-        print(f"Failed to create work items: {str(e)}")
-                        
-        #def update_work_item(wit_client, work_item_id, project_name):
+        
+                #def update_work_item(wit_client, work_item_id, project_name):
         update_patch_document = [
             JsonPatchOperation(
                 op="replace",  # Use "replace" to update an existing field
@@ -274,7 +271,7 @@ def create_work_item():
                 value="Done"
             ),
         ]
-                        
+        
         try:
             updated_work_item = wit_client.update_work_item(
                 document=update_patch_document,
@@ -284,6 +281,10 @@ def create_work_item():
             print(f"Updated work item with ID: {updated_work_item.id}")
         except Exception as e:
             print(f"Failed to update work item 1: {str(e)}")
+                                
+    except Exception as e:
+        print(f"Failed to create work items: {str(e)}")
+                        
     except Exception as e:
         print(f"Failed to update work item 2: {str(e)}")
         
