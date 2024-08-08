@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from azure.devops.connection import Connection
 from msrest.authentication import BasicAuthentication
-from azure.devops.v7_1.work_item_tracking import JsonPatchOperation
-from azure.devops.v7_1.work_item_tracking.models import Wiql
+from azure.devops.v7_0.work_item_tracking import JsonPatchOperation
+from azure.devops.v7_0.work_item_tracking.models import Wiql
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import re
@@ -17,10 +17,11 @@ import time
 import shutil
 from datetime import datetime
 import subprocess
-from FinalSolution import open_work_item_in_browser, getBugID
-from FinalSolution import organization_url, personal_access_token, wit_client, connection
-
+from FinalSolution import connection, getBug, open_work_item_in_browser
+from FinalSolution import organization_url
+from storage import readData, writeData
 from hourEntry import automate_hour_entry
+import json
 
 # pip install tk
 # pip install azure-devops
@@ -31,6 +32,8 @@ from hourEntry import automate_hour_entry
 
 import watchdog.events
 import watchdog.observers
+
+userState = readData()
 
 winWidth = 400
 winHeight = 350
@@ -121,19 +124,24 @@ def save_all():
     global src_path, dst_path
     custom_src_path = src_path_entry.get()
     custom_dst_path = dst_path_entry.get()
+    
+    if(custom_dst_path != userState["dst_path"] or custom_src_path != "src_path"):
+        print("Custom paths modified.")
+        writeData(['', '', '', custom_src_path, custom_dst_path, ''])
+    
+    # MODIFIED TO TXT FILE    
+    # if dst_path != custom_dst_path or src_path != custom_src_path:
+    #     dst_path = custom_dst_path
+    #     src_path = custom_src_path
+    #     f = open("pathway.py", "w")
+    #     f.write(f"src_path = \"{src_path}\"\ndst_path = \"{dst_path}\"\nexe_path = \"{dst_path}\"\\E6Shell.exe\nclose_path = \"{close_path}\"")
+    #     f.close()
 
-    if dst_path != custom_dst_path or src_path != custom_src_path:
-        dst_path = custom_dst_path
-        src_path = custom_src_path
-        f = open("pathway.py", "w")
-        f.write(f"src_path = {src_path}\ndst_path = {dst_path}\nexe_path = {dst_path}\\E6Shell.exe\nclose_path = {close_path}")
-        f.close()
+    #     print("Pathway.py has been updated.")
 
-        print("Pathway.py has been updated.")
-
-        f = open("pathway.py", "r")
-        print(f.read())
-        f.close()
+    #     f = open("pathway.py", "r")
+    #     print(f.read())
+    #     f.close()
 
 row = 0
 tab1.rowconfigure(0, weight=1)
@@ -163,14 +171,14 @@ src_path_label = tk.Label(tab1, text="Source Path:", fg='black', width=winWidth 
 src_path_label.grid(row=row, column=0,  sticky="WE")
 src_path_entry = tk.Entry(tab1)
 src_path_entry.grid(row=row, column=1, columnspan=2, sticky="WE")
-src_path_entry.insert(0, src_path)
+src_path_entry.insert(0, "")
 row += 1
 
 dst_path_label = tk.Label(tab1, text="Destination Path:", fg='black', width=winWidth // 25)
 dst_path_label.grid(row=row, column=0, sticky="WE")
 dst_path_entry = tk.Entry(tab1)
 dst_path_entry.grid(row=row, column=1, columnspan=2, sticky="WE")
-dst_path_entry.insert(0, dst_path)
+dst_path_entry.insert(0, "")
 row += 1
 
 set_button = tk.Button(tab1, text="Apply", command=save_all, bg='blue', fg='white', activebackground='darkblue')
@@ -183,8 +191,6 @@ row += 1
 # Azure DevOps organization URL and personal access token (PAT)
 project_name = 'Exact-Globe-Plus'
 work_item_type = 'Task'
-# Create a connection to Azure DevOps
-credentials = BasicAuthentication('', personal_access_token)
 
 title = ""
 created_work_item_coding = ""
@@ -192,6 +198,15 @@ userName = ""
 bug_work_item_id = ""
 
 def create_work_item():
+    if(entry_token.get() == ""):
+        messagebox.showerror('Token',"Token not found.")
+        return
+    
+    personal_access_token = entry_token.get()
+    credentials = BasicAuthentication('', personal_access_token) if personal_access_token != '' else None
+    connection = Connection(base_url=organization_url, creds=credentials) if credentials else None
+    wit_client = connection.clients.get_work_item_tracking_client()
+    writeData(['', '', entry_token.get(), '', '', ''])
     print("Organization URL: ", organization_url)
     bug_id.set(bug_work_item_id)                    
     # Define fields for the new work items
@@ -281,12 +296,13 @@ def create_work_item():
             print(f"Updated work item with ID: {updated_work_item.id}")
         except Exception as e:
             print(f"Failed to update work item 1: {str(e)}")
+            messagebox.showerror("update_work_item", "Error on updating work item 1.")
                                 
     except Exception as e:
         print(f"Failed to create work items: {str(e)}")
-                        
-    except Exception as e:
-        print(f"Failed to update work item 2: {str(e)}")
+        messagebox.showerror("create_work_item", "Error on creating work items.")
+                    
+    # Create the work items
         
     open_work_item_in_browser(bug_item_id.get(), organization_url, project_name)
                         
@@ -294,160 +310,54 @@ def create_work_item():
     #update_work_item(wit_client, created_work_item_coding.id, project_name)
 
 def on_submit():
-    url = entry_url.get()
-
-    # Initialize Selenium WebDriver (Chrome)
-    driver = webdriver.Chrome()
-    driver.get(url)
-
-    # Wait for the page to load (adjust the sleep time as needed)
-    driver.implicitly_wait(10)  # Wait up to 10 seconds for elements to appear
-
-    # Create a BeautifulSoup object with JavaScript rendered content
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-  
-    # Find the element using the specific CSS selector
+    # url = entry_br_id.get()
+    br_id = entry_br_id.get()
+    # if url == "":
+    #     messagebox.showerror("on_submit", "URL not found.")
+    #     return
+    
+    if(entry_token.get() == ""):
+        messagebox.showerror("on_submit","Token not found.")
+        return
+    writeData(['', '', entry_token.get(), '', '', ''])
+    
     try:
-        element = soup.select_one('#_Header > table > tbody > tr > td:nth-child(1) > span')
-        name = soup.select_one('#nano-content > table.WorkflowBlock > tbody > tr:nth-child(2) > td:nth-child(3) > a')
-        desc = soup.find(id ='Description')
-        if name:
-            if element and desc:
-                # Extract the numbers using regex
-                match = re.search(r'\b\d+\.\d+\.\d+\b', element.text)
-                title = desc.text.strip()
-                userName = name.text.strip()
-                user_name.set(userName)
-                print("Name:" + userName)
-                if match :
-                    # br_id.set(match.group())
-                    print("BR ID:" + match.group())
-                    bug_work_item_id = str(getBugID(match.group(), organization_url, personal_access_token))
-                    print("bug_work_item_id:" + bug_work_item_id)
-                    br_id.set(match.group())
-                    bug_item_id.set(bug_work_item_id)
-                    code_title_entry.insert(0, "[CODING]" + title)
-                    test_title_entry.insert(0, "[TESTING]" + title)
-                    # if bug_work_item_id and title and userName:
-                    #     bug_id.set(bug_work_item_id)
-                        
-                    #     # Define fields for the new work items
-                    #     new_work_item_coding = [
-                    #         JsonPatchOperation(
-                    #             op="add",
-                    #             path="/fields/System.Title",
-                    #             value= code_title_entry.get()
-                    #         ),
-                    #         JsonPatchOperation(
-                    #             op="add",
-                    #             path="/fields/System.AssignedTo",
-                    #             value= userName
-                    #         ),
-                    #             JsonPatchOperation(
-                    #             op="add",
-                    #             path="/relations/-",
-                    #             value={
-                    #                 "rel": "System.LinkTypes.Hierarchy-Reverse",
-                    #                 "url": f"{organization_url}/_apis/wit/workItems/{bug_work_item_id}"
-                    #             }
-                    #         ),
-                    #         # Add more fields as needed
-                    #     ]
-                        
-                    #     new_work_item_testing = [
-                    #         JsonPatchOperation(
-                    #             op="add",
-                    #             path="/fields/System.Title",
-                    #             value= test_title_entry.get()
-                    #         ),
-                    #         JsonPatchOperation(
-                    #             op="add",
-                    #             path="/fields/System.AssignedTo",
-                    #             value= " "
-                    #         ),
-                    #         JsonPatchOperation(
-                    #             op="add",
-                    #             path="/fields/Microsoft.VSTS.Common.Activity",
-                    #             value="Testing"
-                    #         ),
-                    #             JsonPatchOperation(
-                    #             op="add",
-                    #             path="/relations/-",
-                    #             value={
-                    #                 "rel": "System.LinkTypes.Hierarchy-Reverse",
-                    #                 "url": f"{organization_url}/_apis/wit/workItems/{bug_work_item_id}"
-                    #             }
-                    #         ),
-                    #     ]
-                        
-                    #     # Uncomment when you want to create task:
-
-                    #     # Create the work items
-                    #     try:
-                    #         created_work_item_coding = wit_client.create_work_item(
-                    #             document=new_work_item_coding,
-                    #             project=project_name,
-                    #             type=work_item_type
-                    #         )
-                    #         print(f"Created Coding work item with ID: {created_work_item_coding.id}")
-                        
-                    #         created_work_item_testing = wit_client.create_work_item(
-                    #             document=new_work_item_testing,
-                    #             project=project_name,
-                    #             type=work_item_type
-                    #         )
-                    #         print(f"Created Testing work item with ID: {created_work_item_testing.id}")
-                        
-                    #     except Exception as e:
-                    #         print(f"Failed to create work items: {str(e)}")
-                        
-                    #     def update_work_item(wit_client, work_item_id, project_name):
-                    #         update_patch_document = [
-                    #             JsonPatchOperation(
-                    #                 op="replace",  # Use "replace" to update an existing field
-                    #                 path="/fields/System.State",
-                    #                 value="Done"
-                    #             ),
-                    #         ]
-                        
-                    #         try:
-                    #             updated_work_item = wit_client.update_work_item(
-                    #                 document=update_patch_document,
-                    #                 id=work_item_id,
-                    #                 project=project_name
-                    #             )
-                    #             print(f"Updated work item with ID: {updated_work_item.id}")
-                    #         except Exception as e:
-                    #             print(f"Failed to update work item: {str(e)}")
-                        
-                    #     # Example usage
-                    #     update_work_item(wit_client, created_work_item_coding.id, project_name)
-                    # else:
-                    #     bug_id.set("Bug ID not found or request not approved.")
-                    #     messagebox.showwarning("Error", "Bug ID not found or request not approved.")
-                else:
-                    messagebox.showwarning("BR ID not found in the element.")
-            else:
-                messagebox.showwarning("Element not found.")
-        else:
-            messagebox.showwarning("Name not found.Please make sure BR approved.")
+        bug_work_item = getBug(br_id)
+        bug_item_id.set(str(bug_work_item[0]))
+        user_name.set(str(bug_work_item[1]))
+        code_title_entry.insert(0, "[CODE] " + bug_work_item[2])
+        test_title_entry.insert(0, "[TEST] " + bug_work_item[2])
     except Exception as e:
-        print(e)
-        messagebox.showwarning(f"An error occurred: {e}")
+        print(f"An error occurred: {str(e)}")
+        messagebox.showerror("on_submit", "Error on Fetching DevOps BUG ITEM.")
 
     # Close the WebDriver
-    driver.quit()
+    # driver.quit()
 
 
 tab2.rowconfigure(0, weight=0)
 tab2.columnconfigure(0, weight=0)
 
 row = 0
+label_token = tk.Label(tab2, text="Enter Token:", fg="black")
+label_token.grid(row=row, column=0)
+entry_token = tk.Entry(tab2, width=30, show="*")
+entry_token.grid(row=row, column=1)
+entry_token.insert(0, "")
+row += 1
+
+# # Create labels and entry fields with red color
+# label_br_id = tk.Label(tab2, text="Enter URL:", fg="black")
+# label_br_id.grid(row=row, column=0)
+# entry_br_id = tk.Entry(tab2, width=30)
+# entry_br_id.grid(row=row, column=1)
+# row += 1
+
 # Create labels and entry fields with red color
-label_url = tk.Label(tab2, text="Enter URL:", fg="black")
-label_url.grid(row=row, column=0)
-entry_url = tk.Entry(tab2, width=30)
-entry_url.grid(row=row, column=1)
+label_br_id = tk.Label(tab2, text="Enter BR ID:", fg="black")
+label_br_id.grid(row=row, column=0)
+entry_br_id = tk.Entry(tab2, width=30)
+entry_br_id.grid(row=row, column=1)
 row += 1
 
 # Button to submit URL
@@ -457,13 +367,13 @@ row += 1
 
 
 # Label and text variable for BR ID
-label_br_id = tk.Label(tab2, text="BR ID:", fg="black")
-label_br_id.grid(row=row, column=0, pady=5)
-br_id = tk.StringVar()
-br_id.set("")
-label_br_id_value = tk.Label(tab2, textvariable=br_id, fg="black")
-label_br_id_value.grid(row=row, column=1)
-row += 1
+# label_br_id = tk.Label(tab2, text="BR ID:", fg="black")
+# label_br_id.grid(row=row, column=0, pady=5)
+# br_id = tk.StringVar()
+# br_id.set("")
+# label_br_id_value = tk.Label(tab2, textvariable=br_id, fg="black")
+# label_br_id_value.grid(row=row, column=1)
+# row += 1
 
 # Label and text variable for BR ID
 label_bug_item_id = tk.Label(tab2, text="BUG ITEM ID:", fg="black")
@@ -529,17 +439,18 @@ tab3.columnconfigure(0, weight=0)
 # entry_password = tk.Entry(tab3, show="*")
 # entry_password.grid(row=1, column=1)
 
-row = 0
 label_user_id = tk.Label(tab3, text="User ID :", fg='black', width=winWidth // 25)
 label_user_id.grid(row=row, column=0,  sticky="WE")
 entry_user_id = tk.Entry(tab3)
 entry_user_id.grid(row=row, column=1, columnspan=2, sticky="WE")
+entry_user_id.insert(0, "")
 row += 1
 
 label_password = tk.Label(tab3, text="Password :", fg='black', width=winWidth // 25)
 label_password.grid(row=row, column=0, sticky="WE")
 entry_password = tk.Entry(tab3, show="*")
 entry_password.grid(row=row, column=1, columnspan=2, sticky="WE")
+entry_password.insert(0, "")
 row += 1
 
 label_pro_code = tk.Label(tab3, text="Project Code :", fg='black', width=winWidth // 25)
@@ -568,4 +479,17 @@ def trigger_hour_entry():
 btn_trigger_hour_entry = tk.Button(tab3, text="Start", command=trigger_hour_entry, bg="green", fg="black")
 btn_trigger_hour_entry.grid(row=row, column=0, columnspan=3, padx=10, sticky="WE")
 
+def init():
+    userState = readData()
+    entry_user_id.insert(0, userState['userName'])
+    entry_password.insert(0, userState['userPassword'])
+    entry_token.insert(0, userState['userToken'])
+    src_path_entry.insert(0, userState['src_path'])
+    dst_path_entry.insert(0, userState['dst_path'])
+    
+init()
+
 root.mainloop()
+
+
+

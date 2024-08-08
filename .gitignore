@@ -1,3 +1,6 @@
 *.json
 *.pyc
+*.zip
+*.txt
 pathway.py
+/build-setup/

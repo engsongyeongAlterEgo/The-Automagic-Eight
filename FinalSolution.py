@@ -4,45 +4,53 @@ from tkinter import messagebox
 from azure.devops.connection import Connection
 # pip install azure-devops
 from msrest.authentication import BasicAuthentication
-from azure.devops.v7_1.work_item_tracking import JsonPatchOperation
-from azure.devops.v7_1.work_item_tracking.models import Wiql
+from azure.devops.v7_0.work_item_tracking import JsonPatchOperation
+from azure.devops.v7_0.work_item_tracking.models import Wiql
 # pip install beautifulsoup4
 from bs4 import BeautifulSoup
 from selenium import webdriver
 # pip install selenium
 import webbrowser
+from storage import readData
+# from accToken import token as personal_access_token
 
-from accToken import token as personal_access_token
-
+# personal_access_token = readData()['userToken'] if readData()['userToken'] else ''
 # personal_access_token = '' #Place your token here
 
 # # Azure DevOps organization URL and personal access token (PAT)
 organization_url = 'https://dev.azure.com/ExactGroup'
 
-# project_name = 'Exact-Globe-Plus'
+project_name = 'Exact-Globe-Plus'
 # work_item_type = 'Task'
 # # Create a connection to Azure DevOps
-credentials = BasicAuthentication('', personal_access_token)
-connection = Connection(base_url=organization_url, creds=credentials)
-wit_client = connection.clients.get_work_item_tracking_client()
+credentials = None
+connection = None
+# wit_client = connection.clients.get_work_item_tracking_client()
 
 # title = " "
-# Function to retrieve Bug work item from Azure DevOps
-def getBugID(bugTitle, organization_url, personal_access_token):
-    
+# Function to retrieve Bug work item from Azure DevOps    
+def getBug(bugTitle):
+    personal_access_token = readData()['userToken'] if readData()['userToken'] else ''
+    credentials = BasicAuthentication('', personal_access_token) if personal_access_token != '' else None
+    connection = Connection(base_url=organization_url, creds=credentials) if credentials else None
+    wit_client = connection.clients.get_work_item_tracking_client()
 
     # Escape single quotes in bugTitle for Wiql query
     bugTitle_for_query = bugTitle.replace("'", "''")
 
+    # print(bugTitle_for_query)
+    
     # Define your query using the bugTitle variable
-    query = Wiql(query=f"SELECT [System.Id] FROM WorkItems WHERE [System.WorkItemType] = 'Bug' AND [Custom.SynergyRequestID] = '{bugTitle_for_query}'")
+    query = Wiql(query=f"SELECT [System.Id], [System.AssignedTo], [System.State], [System.Title], [System.Tags] FROM WorkItems WHERE [System.WorkItemType] = 'Bug' AND [Custom.SynergyRequestID] = '{bugTitle_for_query}'")
 
     # Execute the query
     try:
         work_items = wit_client.query_by_wiql(query).work_items
         if work_items:
             for work_item in work_items:
-                return work_item.id
+                # print(f"Bug ID: {str(work_item['System.AssignedTo'])}")
+                work_item2 = wit_client.get_work_item(work_item.id)
+                return [work_item.id, work_item2.fields['System.AssignedTo']['displayName'], work_item2.fields['System.Title']]
         else:
             return None
     except Exception as ex:

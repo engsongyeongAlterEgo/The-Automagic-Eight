@@ -54,11 +54,11 @@ class FileModifiedHandler(watchdog.events.FileSystemEventHandler):
             self.start_timer()
 
         # subprocess.call(['taskkill', '/F', '/IM', self.program_to_close])   
-        print(f'Event type: {event.event_type}  path : {event.src_path}')
+        # print(f'Event type: {event.event_type}  path : {event.src_path}')
         print(event.is_directory) # This attribute is also available
         if not event.is_directory:
             # Force close the program
-            print(f'event type: {event.event_type}  path : {event.src_path}')
+            # print(f'event type: {event.event_type}  path : {event.src_path}')
             # Get the file name from the event source path
             # file_name = os.path.basename(event.src_path)
             print(f'File name: {file_name}')

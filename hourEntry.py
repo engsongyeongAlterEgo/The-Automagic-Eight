@@ -9,10 +9,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 import time
 from selenium.webdriver.common.keys import Keys
+from storage import writeData
 
 def automate_hour_entry(userId, userPwd, proCode, activity):
     # Initialize the WebDriver for Chrome
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    writeData([userId, userPwd, "", "", "", ""])
+    driver = webdriver.Chrome()
 
     # Initialize ActionChains
     actions = ActionChains(driver)
